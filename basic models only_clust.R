@@ -1,6 +1,5 @@
 #Load File, Load Packages
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
-install.packages(rminer)
 library(rminer)
 library(CrossClustering)
 
@@ -14,7 +13,8 @@ boxplot(bank$euribor3m)
 #Create artificial time-axis beforehand though. The website noted that the values were chronologi-
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
 time_axis <- as.numeric(rownames(bank))
-bank_time <- cbind(bank, time_axis)
+bank_time1 <- cbind(bank, time_axis)
+bank_time <- bank_time1[1:20000,]
 
 #Set modeling techniques, for more information see description in rminer documentation
 models <- c("ctree", "ksvm", "mlpe", "lr")
@@ -22,15 +22,38 @@ models <- c("ctree", "ksvm", "mlpe", "lr")
 # Hold-out (train, test sets)
 H=holdout(bank_time$y,ratio=1/3)
 
-# Setting up clustering 
+#----------------------Clustering----------------------------#
+
+# Setting up clustering training set
 d <- dist(bank_time[H$tr,], method = "euclidean")
-cluster <- CrossClustering(d, k.w.min = 2, k.w.max=20, k.c.max = 20)
+cluster_tr <- CrossClustering(d, k.w.min = 2, k.w.max=20, k.c.max = 21)
 
-# printing clustering information
-cat("amount of clusters:", cluster$Optimal.cluster, "\n")
-cat("Silhouette", cluster$Silhouette, "\n")
-cat("Detected outliers", (1-(cluster$n.clustered/cluster$n.total))*100, "%", "\n")
+# printing clustering information training set
+cat("amount of clusters training set:", cluster_tr$Optimal.cluster, "\n")
+cat("Silhouette of training set clusters", cluster_tr$Silhouette, "\n")
+cat("Detected outliers in clusters training set", (1-(cluster_tr$n.clustered/cluster$n.total))*100, "%", "\n")
 
+# memory clean
+gc()
+
+#Create cluster_n for cluster amount paramater for training set
+cluster_n <- unlist(cluster_tr$Optimal.cluster)
+
+# adding clustering information to variable
+
+# Setting up clustering with testing set
+d <- dist(bank_time[H$ts,], method = "euclidean")
+cluster_ts <- hclust(d, method = "ward.D")
+
+plot(cluster_ts,  labels = FALSE, hang = -1, main = "Original Tree")
+
+# printing clustering information testing set
+cat("amount of clusters training set:", cluster_ts$Optimal.cluster, "\n")
+cat("Silhouette of training set clusters", cluster_ts$Silhouette, "\n")
+cat("Detected outliers in clusters training set", (1-(cluster_ts$n.clustered/cluster$n.total))*100, "%", "\n")
+
+# memory clean
+gc()
 
 #----------------------Modeling----------------------------#
 
@@ -70,8 +93,6 @@ for (i in models) {
   mgraph(bank_time$y[H$ts],P2,graph="LIFT",TC=2,main=paste("LIFT Curve for", i),
        baseline=TRUE,leg=i,Grid=10)
 }
-
-
 
 ########Reset Memory
 gc()
