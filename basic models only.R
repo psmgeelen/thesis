@@ -13,13 +13,14 @@ boxplot(bank$euribor3m)
 #Create artificial time-axis beforehand though. The website noted that the values were chronologi-
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
 time_axis <- as.numeric(rownames(bank))
-bank_time <- cbind(bank, time_axis)
+bank_time1 <- cbind(bank, time_axis)
+bank_time <- bank_time1[1:10000,]
 
 #Set modeling techniques, for more information see description in rminer documentation
 models <- c("ctree", "ksvm", "mlpe", "lr")
 
 # Hold-out (train, test sets)
-H=holdout(bank_time$y,ratio=2/3)
+H=holdout(bank_time$y,ratio=1/3)
 
 #----------------------Modeling----------------------------#
 
