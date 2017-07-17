@@ -46,10 +46,12 @@ for (i in models)
     bank_time_ss_tr <- subset(bank_time[which(bank_time$time_axis >= tr1 & bank_time$time_axis <= tr2), ])
     bank_time_ss_ts <- subset(bank_time[which(bank_time$time_axis >= ts1 & bank_time$time_axis <= ts2), ])
     
-    #CrossClustering
+    #create clustering information
+    # distance estimation, k.c.max is maximum.
+    distance <- dist(bank_time_ss_tr, method = "euclidean")
+    clusters_list <- CrossClustering(d, k.w.min = 2, k.w.max = 20, k.c.max = 20)
     
-    d <- dist(bank_time_ss_ts, method="euclidean")
-    clusterfuck <- crossclustering(d, stuff)
+    
     
     #Modeling and Predictions 
     M <- fit(y~.,bank_time_ss_tr,model=i, task = "prob")

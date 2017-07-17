@@ -2,6 +2,7 @@
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
 install.packages(rminer)
 library(rminer)
+library(CrossClustering)
 
 #Data Prep Phase 
 boxplot(bank$age)
@@ -15,15 +16,21 @@ boxplot(bank$euribor3m)
 time_axis <- as.numeric(rownames(bank))
 bank_time <- cbind(bank, time_axis)
 
-
 #Set modeling techniques, for more information see description in rminer documentation
 models <- c("ctree", "ksvm", "mlpe", "lr")
 
 # Hold-out (train, test sets)
 H=holdout(bank_time$y,ratio=1/3)
 
-d<- dist(bank_time[H$tr,], method = "euclidean")
-cluster <- CrossClustering(d, k.w.min = 2, k.w.max=10, k.c.max = 10)
+# Setting up clustering 
+d <- dist(bank_time[H$tr,], method = "euclidean")
+cluster <- CrossClustering(d, k.w.min = 2, k.w.max=20, k.c.max = 20)
+
+# printing clustering information
+cat("amount of clusters:", cluster$Optimal.cluster, "\n")
+cat("Silhouette", cluster$Silhouette, "\n")
+cat("Detected outliers", (1-(cluster$n.clustered/cluster$n.total))*100, "%", "\n")
+
 
 #----------------------Modeling----------------------------#
 
