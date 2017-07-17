@@ -2,6 +2,7 @@
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
 library(rminer)
 library(CrossClustering)
+library(NbClust)
 
 #Data Prep Phase 
 boxplot(bank$age)
