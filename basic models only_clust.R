@@ -2,7 +2,6 @@
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
 library(rminer)
 library(CrossClustering)
-library(NbClust)
 
 #Data Prep Phase 
 boxplot(bank$age)
@@ -15,7 +14,7 @@ boxplot(bank$euribor3m)
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
 time_axis <- as.numeric(rownames(bank))
 bank_time1 <- cbind(bank, time_axis)
-bank_time <- bank_time1[1:20000,]
+bank_time <- bank_time1[1:1000,]
 
 #Set modeling techniques, for more information see description in rminer documentation
 models <- c("ctree", "ksvm", "mlpe", "lr")
@@ -27,31 +26,28 @@ H=holdout(bank_time$y,ratio=1/3)
 
 # Setting up clustering training set
 d <- dist(bank_time[H$tr,], method = "euclidean")
-cluster_tr <- CrossClustering(d, k.w.min = 2, k.w.max=20, k.c.max = 21)
+clusters <- CrossClustering(d, k.w.min = 2, k.w.max=20, k.c.max = 21)
 
 # printing clustering information training set
-cat("amount of clusters training set:", cluster_tr$Optimal.cluster, "\n")
-cat("Silhouette of training set clusters", cluster_tr$Silhouette, "\n")
-cat("Detected outliers in clusters training set", (1-(cluster_tr$n.clustered/cluster$n.total))*100, "%", "\n")
+cat("amount of clusters training set:", clusters$Optimal.cluster, "\n")
+cat("Silhouette of training set clusters", clusters$Silhouette, "\n")
+cat("Ommited information", (1-(clusters$n.clustered/clusters$n.total))*100, "%", "\n")
 
 # memory clean
 gc()
 
 #Create cluster_n for cluster amount paramater for training set
-cluster_n <- unlist(cluster_tr$Optimal.cluster)
+cluster_n <- unlist(clusters$Optimal.cluster)
 
 # adding clustering information to variable
+C1_t <- vector(mode="numeric", length=0)
+C2_t <- vector(mode="numeric", length=0)
+C3_t <- vector(mode="numeric", length=0)
 
-# Setting up clustering with testing set
-d <- dist(bank_time[H$ts,], method = "euclidean")
-cluster_ts <- hclust(d, method = "ward.D")
-
-plot(cluster_ts,  labels = FALSE, hang = -1, main = "Original Tree")
-
-# printing clustering information testing set
-cat("amount of clusters training set:", cluster_ts$Optimal.cluster, "\n")
-cat("Silhouette of training set clusters", cluster_ts$Silhouette, "\n")
-cat("Detected outliers in clusters training set", (1-(cluster_ts$n.clustered/cluster$n.total))*100, "%", "\n")
+for (i in 1:cluster_n) {
+  bank_time$cluster[clusters$Cluster.list[i]] <- cbind (i)
+  
+}
 
 # memory clean
 gc()

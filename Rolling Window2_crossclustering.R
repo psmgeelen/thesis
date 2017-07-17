@@ -24,6 +24,11 @@ C5_t <- vector(mode="numeric", length=0)
 C6_t <- vector(mode="numeric", length=0)
 C7_t <- vector(mode="numeric", length=0)
 C8_t <- vector(mode="numeric", length=0)
+C9_t <- vector(mode="numeric", length=0)
+C10_t <- vector(mode="numeric", length=0)
+C11_t <- vector(mode="numeric", length=0)
+C12_t <- vector(mode="numeric", length=0)
+C13_t <- vector(mode="numeric", length=0)
 
 #----------------Modeling with Rolling Window--------------------#
 windowsize <- 1500
@@ -45,13 +50,17 @@ for (i in models)
     #subsets for training and testing
     bank_time_ss_tr <- subset(bank_time[which(bank_time$time_axis >= tr1 & bank_time$time_axis <= tr2), ])
     bank_time_ss_ts <- subset(bank_time[which(bank_time$time_axis >= ts1 & bank_time$time_axis <= ts2), ])
+    bank_time_ss_cl <- subset(bank_time[which(bank_time$time_axis >= tr1 & bank_time$time_axis <= ts2), ])
     
     #create clustering information
     # distance estimation, k.c.max is maximum.
-    distance <- dist(bank_time_ss_tr, method = "euclidean")
-    clusters_list <- CrossClustering(d, k.w.min = 2, k.w.max = 20, k.c.max = 20)
+    distance <- dist(bank_time_ss_cl, method = "euclidean")
+    clusters_list <- CrossClustering(d, k.w.min = 2, k.w.max = 21, k.c.max = 21)
+    ommited <- ((1-(clusters_list$n.clustered/clusters_list$n.total))*100)
     
     
+    bank_time_ss_tr$cluster <- 
+    bank_time_ss_ts$cluster <-
     
     #Modeling and Predictions 
     M <- fit(y~.,bank_time_ss_tr,model=i, task = "prob")
@@ -74,7 +83,7 @@ for (i in models)
     
     # Model label
     C4 <- print(paste(i))
-    # Stack values
+    # Stack values modeling
     C0_t <- c(C0_t, C0)
     C1_t <- c(C1_t, C1)
     C2_t <- c(C2_t, C2)
@@ -84,6 +93,10 @@ for (i in models)
     C6_t <- c(C6_t, tr2)
     C7_t <- c(C7_t, ts1)
     C8_t <- c(C8_t, ts2)
+    # Stack values clustering
+    C9_t <- c(C9_t, clusters_list$Optimal.cluster)
+    C10_t <- c (C10_t, clusters_list$Silhouette)
+    C11_t <- c(C11_t, ommited)
     
     gc()
 
@@ -94,9 +107,9 @@ cat("---time---")
 print(t)
 
 #Combine Data Frame
-rolling_window_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t,C6_t,C7_t,C8_t)
+rolling_window_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t,C6_t,C7_t,C8_t, C9_t, C10_t, C11_t)
 #Label Data Frame
-colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "TR1", "TR2", "TS1", "TS2")
+colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "TR1", "TR2", "TS1", "TS2", "Amount of Clusters", "Silhouette", "% Ommited")
 
 #Show Table (back check)
 head(rolling_window_sum)
