@@ -40,7 +40,7 @@ print(itt)
 t <- system.time(
 for (i in models)
   {
-  for(c in 1:2) # iterations rolling window
+  for(c in 1:2) # itterations rolling window
     {
     tr1 <- (1+(c-1)*increments)
     tr2 <- ((1+(c-1)*increments)+windowsize)
