@@ -44,8 +44,8 @@ C1_t <- vector(mode="numeric", length=0)
 C2_t <- vector(mode="numeric", length=0)
 C3_t <- vector(mode="numeric", length=0)
 
-for (i in 1:cluster_n) {
-  bank_time$cluster[clusters$Cluster.list[i]] <- cbind (i)
+for (c in 1) {
+  bank_time[clusters$Cluster.list[c],] <- cbind (c)
   
 }
 
