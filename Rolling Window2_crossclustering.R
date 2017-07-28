@@ -4,16 +4,18 @@ install.packages(rminer)
 library(rminer)
 library(CrossClustering)
 library(dplyr)
+set.seed(1)
 
 
 #Create artificial time-axis beforehand though. The website noted that the values were chronologi-
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
 time_axis <- as.numeric(rownames(bank))
-bank_time <- cbind(bank, time_axis)
+bank_time_1 <- cbind(bank, time_axis)
+bank_time <- bank_time_1[1:10000,]
 
 
 #Set modeling techniques, for more information see description in rminer documentation
-models <- c("lr", "ksvm", "ctree", "mlpe")
+models <- c("lr", "ksvm", "ctree", "mlp")
 
 #Variable prep
 C0_t <- vector(mode="character", length=0)
@@ -30,32 +32,33 @@ C10_t <- vector(mode="numeric", length=0)
 C11_t <- vector(mode="numeric", length=0)
 C12_t <- vector(mode="numeric", length=0)
 C13_t <- vector(mode="numeric", length=0)
+C14_t <- vector(mode="numeric", length=0)
+C15_t <- vector(mode="character", length=0)
 
 #----------------Modeling with Rolling Window--------------------#
-windowsize <- 1000
-increments <- 1000
+windowsize <- c(5000, 2000, 1500, 1000)
+increments <- 100
 
-itt <- ( (length(bank_time$y)-windowsize) %/% increments)
-print(itt)
+for (ws in windowsize) {
 
-t <- system.time(
 for (i in models)
   {
-  for(c in 1:itt) # itterations rolling window
+  for(c in 1:((nrow(bank_time)-(2*ws)) %/% increments)) # itterations rolling window
     {
     tr1 <- (1+(c-1)*increments)
-    tr2 <- ((1+(c-1)*increments)+windowsize)
-    ts1 <- (((1+(c-1)*increments)+windowsize)+1)
-    ts2 <- (((1+(c-1)*increments)+2*windowsize)+1)
+    tr2 <- ((1+(c-1)*increments)+ws)
+    ts1 <- (((1+(c-1)*increments)+ws)+1)
+    ts2 <- (((1+(c-1)*increments)+2*ws)+1)
     
     #subsets for training and testing
     bank_time_ss_cl <- subset(bank_time[which(bank_time$time_axis >= tr1 & bank_time$time_axis <= ts2), ])
+    bank_time_ss_cl_without_y <- subset(bank_time_ss_cl[,-21])
     
     #----------------------Clustering----------------------------#
     
     # Setting up clustering training set
-    d <- dist(bank_time_ss_cl, method = "euclidean")
-    clusters <- CrossClustering(d, k.w.min = 2, k.w.max=20, k.c.max = 21)
+    d <- dist(bank_time_ss_cl_without_y, method = "euclidean")
+    clusters <- CrossClustering(d, k.w.min = 2, k.w.max=19, k.c.max = 19)
     
     # printing clustering information training set
     cat("amount of clusters training set:", clusters$Optimal.cluster, "\n")
@@ -83,13 +86,13 @@ for (i in models)
     
     # Labeling of clusters and aggregation of clustered data. 
     
-    for (c in 1:clus_amount) {
+    for (q in 1:clus_amount) {
       
-      ss_clust <- subset(bank_time[clusters$Cluster.list[[c]],])
+      ss_clust <- subset(bank_time[clusters$Cluster.list[[q]],])
       
       ss_it_length <- nrow(ss_clust)
       
-      clust_n <- replicate(ss_it_length, c)
+      clust_n <- replicate(ss_it_length, q)
       
       ss_clust <- cbind(ss_clust, clust_n)
       
@@ -140,20 +143,19 @@ for (i in models)
     cat("ALIFT of", i, ":", C2, "\n")
     cat("ACC of", i, ":", C3, "\n")
     cat("---Confusion Matrix---", "\n")
-    print(C4)  
     
-    # Model label
-    C4 <- print(paste(i))
     # Stack values modeling
-    C0_t <- c(C0_t, C0)
+    C0_t <- c(C0_t, c)
     C1_t <- c(C1_t, C1)
     C2_t <- c(C2_t, C2)
     C3_t <- c(C3_t, C3)
-    C4_t <- c(C4_t, print(paste(i)))
+    C4_t <- c(C4_t, i)
     C5_t <- c(C5_t, tr1)
     C6_t <- c(C6_t, tr2)
     C7_t <- c(C7_t, ts1)
     C8_t <- c(C8_t, ts2)
+    C14_t <- c(C14_t, ws)
+    C15_t <- c(C15_t, "yes")
     # Stack values clustering
     C9_t <- c(C9_t, unlist(clusters$Optimal.cluster))
     C10_t <- c (C10_t, unlist(clusters$Silhouette))
@@ -162,21 +164,21 @@ for (i in models)
     gc()
 
   } }
-)
+}
 
 cat("---time---")
 print(t)
 
 #Combine Data Frame
-rolling_window_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t,C6_t,C7_t,C8_t, C9_t, C10_t, C11_t)
+rolling_window_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t,C6_t,C7_t,C8_t,C14_t,C15_t,C9_t, C10_t, C11_t)
 #Label Data Frame
-colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "TR1", "TR2", "TS1", "TS2", "Amount of Clusters", "Silhouette", "% Ommited")
+colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "TR1", "TR2", "TS1", "TS2", "Window-size", "Clustering", "Amount of Clusters", "Silhouette", "% Ommited")
 
 #Show Table (back check)
 head(rolling_window_sum)
 
 # Write file 
-write.table(rolling_window_sum, "c:/users/qnect/desktop/rolling_window_sum_small.txt", sep=";")
+write.table(rolling_window_sum, "c:/users/qnect/desktop/rolling_window_clust.txt", sep=";")
 
 gc()
 

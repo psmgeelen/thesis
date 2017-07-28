@@ -1,8 +1,10 @@
 #Load File, Load Packages
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
-library(rminer)
+install.packages(rminer)
 library(CrossClustering)
 library(dplyr)
+library(rminer)
+set.seed(1)
 
 #Data Prep Phase 
 boxplot(bank$age)
@@ -15,7 +17,7 @@ boxplot(bank$euribor3m)
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
 time_axis <- as.numeric(rownames(bank))
 bank_time1 <- cbind(bank, time_axis)
-bank_time <- bank_time1[1:10000,]
+bank_time <- bank_time1[1:1000,]
 
 
 #----------------------Clustering----------------------------#
@@ -51,17 +53,17 @@ clust_tot <- vector(mode="numeric", length=0)
 # Labeling of clusters and aggregation of clustered data. 
 
 for (c in 1:clus_amount) {
-    
-    ss_clust <- subset(bank_time[clusters$Cluster.list[[c]],])
-    
-    ss_it_length <- nrow(ss_clust)
-    
-    clust_n <- replicate(ss_it_length, c)
-    
-    ss_clust <- cbind(ss_clust, clust_n)
-    
-    clust_tot <- rbind(clust_tot, ss_clust)
-    
+  
+  ss_clust <- subset(bank_time[clusters$Cluster.list[[c]],])
+  
+  ss_it_length <- nrow(ss_clust)
+  
+  clust_n <- replicate(ss_it_length, c)
+  
+  ss_clust <- cbind(ss_clust, clust_n)
+  
+  clust_tot <- rbind(clust_tot, ss_clust)
+  
 } 
 
 # Addition of non-assigned data with "is not equal" to feature. 
@@ -80,52 +82,50 @@ data <- rbind(clust_tot, non_cluster_group)
 # memory clean
 gc()
 
+#Set modeling techniques, for more information see description in rminer documentation
+models_name <- rbind("Decision Tree", "Support Vector Machine", "Neural Network", "LOGIT")
+models_specs <-rbind("ctree","ksvm","mlp","lr")
+
+models <- cbind(models_name, models_specs)
+colnames(models) <- c("Name", "Model")
+
+# Hold-out (train, test sets)
+H=holdout(data$y,ratio=2/3)
 
 #----------------------Modeling----------------------------#
 
-#Set modeling techniques, for more information see description in rminer documentation
-models <- c("ctree", "ksvm", "mlpe", "lr")
+for (i in seq_len(nrow(models))) {
 
-# Hold-out (train, test sets)
-H=holdout(data$y,ratio=1/3)
+  M=fit(y~.,data[H$tr,], model = models[i,2],  task="class")
+  M2=fit(y~.,data[H$tr,], model = models[i,2], task="prob")
   
-  
-  for (i in models) {
-
-    M=fit(y~.,data[H$tr,],model=i, task="class")
-    M2=fit(y~.,data[H$tr,],model=i, task="prob")
-  
-    # Creating variables model
-    P=predict(M,data[H$ts,])
-    P2=predict(M2,data[H$ts,])
-  
+  # Creating variables model
+  P=predict(M,data[H$ts,])
+  P2=predict(M2,data[H$ts,])
   
     #Title
-    cat(paste("----- Results for model", i, "-----"))
-    # Print stats. 
-    # CONF Matrix 
-    print(paste("Confusion Matrix Predicition/Probability", i))
-    print(mmetric(data$y[H$ts],P,"CONF"))
-    print(mmetric(data$y[H$ts],P,"CONF"))
-    # AUC of ROC
-    cat(paste("AUC for ROC for model", i, "= "))
-    cat(mmetric(data$y[H$ts],P2,"AUC"), "\n")
-    # AUC ALIFT
-    cat(paste("AUC for ALIFT model", i, "= "))
-    cat(mmetric(data$y[H$ts],P2,"ALIFT"), "\n")
+  cat(paste("----- Results for model", models[i,1], "-----", "\n"))
+  # AUC of ROC
+  cat(paste("AUC for ROC for model", models[i,1], "= "))
+  cat(mmetric(data$y[H$ts],P2,"AUC"), "\n")
+  # AUC ALIFT
+  cat(paste("AUC for ALIFT model", models[i,1], "= "))
+  cat(mmetric(data$y[H$ts],P2,"ALIFT"), "\n")
     # Accuracy
-    cat(paste("Accuracy Pred. model", i, "= "))
-    cat(mmetric(data$y[H$ts],P,"ACC"), "\n")
-    cat(paste("Accuracy Prob. model", i, "= "))
-    cat(mmetric(data$y[H$ts],P2,"ACC"), "\n") 
+  cat(paste("Accuracy Pred. model", models[i,1], "= "))
+  cat(mmetric(data$y[H$ts],P,"ACC"), "\n")
   
-    #ROC
-    mgraph(data$y[H$ts],P2,graph="ROC",TC=2,main=paste("ROC Curve for",i),
-       baseline=TRUE,leg=i,Grid=10)
-    #LIFT
-    mgraph(data$y[H$ts],P2,graph="LIFT",TC=2,main=paste("LIFT Curve for", i),
-       baseline=TRUE,leg=i,Grid=10)
-} 
+  #ROC
+  mgraph(data$y[H$ts],P2,graph="ROC",TC=2,main=paste("ROC Curve for",models[i,1]),
+       baseline=TRUE,leg=models[i,1],Grid=10)
+  #LIFT
+  mgraph(data$y[H$ts],P2,graph="LIFT",TC=2,main=paste("LIFT Curve for", models[i,1]),
+       baseline=TRUE,leg=models[i,1],Grid=10)
+  
+  
+  
+    }
+
 
 ########Reset Memory
 gc()
