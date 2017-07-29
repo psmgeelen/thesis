@@ -10,8 +10,7 @@ set.seed(1)
 #Create artificial time-axis beforehand though. The website noted that the values were chronologi-
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
 time_axis <- as.numeric(rownames(bank))
-bank_time_1 <- cbind(bank, time_axis)
-bank_time <- bank_time_1[1:10000,]
+bank_time <- cbind(bank, time_axis)
 
 
 #Set modeling techniques, for more information see description in rminer documentation
@@ -36,22 +35,26 @@ C14_t <- vector(mode="numeric", length=0)
 C15_t <- vector(mode="character", length=0)
 
 #----------------Modeling with Rolling Window--------------------#
+# Hyper-Parameters
 windowsize <- c(5000, 2000, 1500, 1000)
-increments <- 100
+increments <- 500
 
+# Measuring Time
+t <- system.time(
+
+  
+# Loop
 for (ws in windowsize) {
 
 for (i in models)
   {
   for(c in 1:((nrow(bank_time)-(2*ws)) %/% increments)) # itterations rolling window
     {
-    tr1 <- (1+(c-1)*increments)
-    tr2 <- ((1+(c-1)*increments)+ws)
-    ts1 <- (((1+(c-1)*increments)+ws)+1)
-    ts2 <- (((1+(c-1)*increments)+2*ws)+1)
+    w1 <- (1+(c-1)*increments)
+    w2 <- ((1+(c-1)*increments)+ws)
     
     #subsets for training and testing
-    bank_time_ss_cl <- subset(bank_time[which(bank_time$time_axis >= tr1 & bank_time$time_axis <= ts2), ])
+    bank_time_ss_cl <- subset(bank_time[which(bank_time$time_axis >= w1 & bank_time$time_axis <= w2), ])
     bank_time_ss_cl_without_y <- subset(bank_time_ss_cl[,-21])
     
     #----------------------Clustering----------------------------#
@@ -131,18 +134,15 @@ for (i in models)
     P <- predict(M, data_ts, type = "prob")
     
     #Perfomance measure
-    cat("---Rolling Window model", i, "with", c, "th iteration---", "\n")
+    cat("---Rolling Window model", i, "with", c, "th iteration","@ window-size",ws,"---", "\n")
     C1=mmetric(data_ts$y,P,metric="AUC")
     C2=mmetric(data_ts$y,P,metric="ALIFT")
     C3=mmetric(data_ts$y,P,metric="ACC")
-    C4=mmetric(data_ts$y,P,metric="CONF")
-    C0=print(c)
     
     #Print findings
     cat("AUC of", i, ":", C1, "\n")
     cat("ALIFT of", i, ":", C2, "\n")
     cat("ACC of", i, ":", C3, "\n")
-    cat("---Confusion Matrix---", "\n")
     
     # Stack values modeling
     C0_t <- c(C0_t, c)
@@ -150,10 +150,8 @@ for (i in models)
     C2_t <- c(C2_t, C2)
     C3_t <- c(C3_t, C3)
     C4_t <- c(C4_t, i)
-    C5_t <- c(C5_t, tr1)
-    C6_t <- c(C6_t, tr2)
-    C7_t <- c(C7_t, ts1)
-    C8_t <- c(C8_t, ts2)
+    C5_t <- c(C5_t, w1)
+    C6_t <- c(C6_t, w2)
     C14_t <- c(C14_t, ws)
     C15_t <- c(C15_t, "yes")
     # Stack values clustering
@@ -161,18 +159,28 @@ for (i in models)
     C10_t <- c (C10_t, unlist(clusters$Silhouette))
     C11_t <- c(C11_t, ommited)
     
+    # clean variables
+    data <- 0
+    data_tr <- 0
+    data_ts <- 0
+    bank_time_ss_cl <- 0
+    bank_time_ss_cl_without_y <- 0
+    
     gc()
 
   } }
 }
 
+# system time finish
+)
+
 cat("---time---")
 print(t)
 
 #Combine Data Frame
-rolling_window_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t,C6_t,C7_t,C8_t,C14_t,C15_t,C9_t, C10_t, C11_t)
+rolling_window_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t,C6_t,C14_t,C15_t,C9_t, C10_t, C11_t)
 #Label Data Frame
-colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "TR1", "TR2", "TS1", "TS2", "Window-size", "Clustering", "Amount of Clusters", "Silhouette", "% Ommited")
+colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "Lower", "Upper", "Window-size", "Clustering", "Amount of Clusters", "Silhouette", "% Ommited")
 
 #Show Table (back check)
 head(rolling_window_sum)
