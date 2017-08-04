@@ -1,9 +1,9 @@
 #Load File, Load Packages
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
-install.packages(rminer)
 library(CrossClustering)
 library(dplyr)
 library(rminer)
+library(cluster)
 set.seed(1)
 
 #Data Prep Phase 
@@ -16,14 +16,13 @@ boxplot(bank$euribor3m)
 #Create artificial time-axis beforehand though. The website noted that the values were chronologi-
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
 time_axis <- as.numeric(rownames(bank))
-bank_time1 <- cbind(bank, time_axis)
-bank_time <- bank_time1[1:1000,]
+bank_time <- cbind(bank, time_axis)
 
 
 #----------------------Clustering----------------------------#
 
 # Setting up clustering training set
-d <- dist(bank_time, method = "euclidean")
+d <- daisy(bank_time, metric = "gower")
 clusters <- CrossClustering(d, k.w.min = 2, k.w.max=20, k.c.max = 21)
 
 # printing clustering information training set
@@ -123,8 +122,7 @@ for (i in seq_len(nrow(models))) {
        baseline=TRUE,leg=models[i,1],Grid=10)
   
   
-  
-    }
+}
 
 
 ########Reset Memory

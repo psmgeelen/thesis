@@ -1,6 +1,5 @@
 #Load File, Load Packages
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
-install.packages(rminer)
 library(rminer)
 library(CrossClustering)
 library(dplyr)
@@ -186,7 +185,7 @@ colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "L
 head(rolling_window_sum)
 
 # Write file 
-write.table(rolling_window_sum, "c:/users/qnect/desktop/rolling_window_clust.txt", sep=";")
+write.table(rolling_window_sum, "/home/schnitzel/rolling_window_clust.txt", sep=";")
 
 gc()
 
