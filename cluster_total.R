@@ -3,6 +3,7 @@ bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
 library(rminer)
 library(CrossClustering)
 library(dplyr)
+library(cluster)
 set.seed(1)
 
 
