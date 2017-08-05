@@ -12,7 +12,7 @@ set.seed(1)
 time_axis <- as.numeric(rownames(bank))
 bank_time <- cbind(bank, time_axis)
 
-bank_time_without_y <- subset(bank_time_ss_cl[,-21])
+bank_time_without_y <- subset(bank_time[,-21])
 
 #----------------------Clustering----------------------------#
     
@@ -55,7 +55,7 @@ for (q in 1:clus_amount) {
     
 clusters_info <- unlist(clusters$Cluster.list)
     
-non_cluster_group <- anti_join(bank_time_without_y, clust_tot)
+non_cluster_group <- anti_join(bank_time, clust_tot)
     
 # Add column for missing values
 non_cluster_group$clust_n <- vector(mode="numeric", length= nrow(non_cluster_group))
@@ -64,7 +64,7 @@ non_cluster_group$clust_n <- vector(mode="numeric", length= nrow(non_cluster_gro
 data <- rbind(clust_tot, non_cluster_group)
     
 # Write file 
-write.table(data, "/home/schnitzel/total_with_clust.txt", sep=";")
+write.table(data, "~/thesis/total_with_clust.txt", sep=";")
 
 gc()
 
