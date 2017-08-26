@@ -3,6 +3,7 @@ bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
 library(rminer)
 library(CrossClustering)
 library(dplyr)
+library(cluster)
 set.seed(1)
 
 
@@ -59,7 +60,7 @@ for (i in models)
     #----------------------Clustering----------------------------#
     
     # Setting up clustering training set
-    d <- dist(bank_time_ss_cl_without_y, method = "euclidean")
+    d <- daisy(bank_time_ss_cl_without_y, metric = "gower")
     clusters <- CrossClustering(d, k.w.min = 2, k.w.max=19, k.c.max = 19)
     
     # printing clustering information training set
@@ -185,7 +186,8 @@ colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "L
 head(rolling_window_sum)
 
 # Write file 
-write.table(rolling_window_sum, "/home/schnitzel/rolling_window_clust.txt", sep=";")
+#write.table(rolling_window_sum, "/home/schnitzel/rolling_window_clust.txt", sep=";")
+write.table(rolling_window_sum, "rolling_window_clust.txt", sep=";")
 
 gc()
 
