@@ -1,4 +1,4 @@
-#Load File, Load Packages
+#Load File, Load Pa ckages
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
 library(rminer)
 library(CrossClustering)
@@ -62,62 +62,23 @@ for (i in models)
     
     # Setting up clustering training set
     d <- daisy(bank_time_ss_cl_without_y, metric = "gower")
-    clusters <- CrossClustering(d, k.w.min = 2, k.w.max=19, k.c.max = 19)
+    cc_hyper <- CrossClustering(d, k.w.min = 2, k.w.max=19, k.c.max = 19)
+    hyper_nr <- unlist(cc_hyper$Optimal.cluster)
     
     # printing clustering information training set
-    cat("amount of clusters training set:", clusters$Optimal.cluster, "\n")
-    cat("Silhouette of training set clusters", clusters$Silhouette, "\n")
-    cat("Ommited information", (1-(clusters$n.clustered/clusters$n.total))*100, "%", "\n")
+    cat("amount of clusters training set:", cc_hyper$Optimal.cluster, "\n")
+    
+    clusters <- kmeans(d, hyper_nr, iter.max = 10, nstart = 1)
+    
+    data <- bank_time_ss_cl
+    
+    for (o in 1:ws) {
+      data$cluster[[o]] <- unlist(clusters$cluster[[o]])
+    }
     
     # memory clean
     gc()
     
-    #Create cluster_n for cluster amount paramater for training set
-    clus_amount <- unlist(clusters$Optimal.cluster)
-    
-    # adding clustering information to variable
-    clust_tot <- vector(mode="numeric", length=0)
-    
-    # this methodology deconstructs the prior dataset and add variables as long as they are part
-    # of the clustering grouping. It must be noted that the CrossClustering uses a partial clu-
-    # tering methodology, meaning that not all data will be assigned into a specific cluster. 
-    # This is beneficial for accuracy of the clusters. Yet when deconstructing the dataset to
-    # assign value, it must be noted that there will be a "rest" group, that is not assigned to 
-    # any cluster. Therefore an additional feature must be inlcuded into the script, by which
-    # the not assigned data can be re-introduced in the data set. Below, the clusters are added
-    # through a loop. The data that has no cluster assignment will added straight after. 
-    
-    
-    # Labeling of clusters and aggregation of clustered data. 
-    
-    for (q in 1:clus_amount) {
-      
-      ss_clust <- subset(bank_time[clusters$Cluster.list[[q]],])
-      
-      ss_it_length <- nrow(ss_clust)
-      
-      clust_n <- replicate(ss_it_length, q)
-      
-      ss_clust <- cbind(ss_clust, clust_n)
-      
-      clust_tot <- rbind(clust_tot, ss_clust)
-      
-    } 
-    
-    # Addition of non-assigned data with "is not equal" to feature. 
-    # listning what items are assigned
-    
-    clusters_info <- unlist(clusters$Cluster.list)
-    
-    non_cluster_group <- anti_join(bank_time_ss_cl, clust_tot)
-    
-    # Add column for missing values
-    non_cluster_group$clust_n <- vector(mode="numeric", length= nrow(non_cluster_group))
-    
-    # build final dataset
-    data <- rbind(clust_tot, non_cluster_group)
-    
-    ommited <- ((1-(clusters$n.clustered/clusters$n.total))*100)
     
     # clean out variables
     ss_clust <- vector(mode="numeric", length=0)
@@ -154,11 +115,11 @@ for (i in models)
     C5_t <- c(C5_t, w1)
     C6_t <- c(C6_t, w2)
     C14_t <- c(C14_t, ws)
-    C15_t <- c(C15_t, "CrossClustering")
+    C15_t <- c(C15_t, "Kmeans")
     # Stack values clustering
-    C9_t <- c(C9_t, unlist(clusters$Optimal.cluster))
-    C10_t <- c (C10_t, unlist(clusters$Silhouette))
-    C11_t <- c(C11_t, ommited)
+    C9_t <- c(C9_t, unlist(cc_hyper$Optimal.cluster))
+    C10_t <- c (C10_t, "")
+    C11_t <- c(C11_t, "")
     
     
     # clean variables
@@ -190,7 +151,7 @@ head(rolling_window_sum)
 
 # Write file 
 #write.table(rolling_window_sum, "/home/schnitzel/rolling_window_clust.txt", sep=";")
-write.table(rolling_window_sum, "rolling_window_crossclustering.txt", sep=";")
+write.table(rolling_window_sum, "rolling_window_kmeans.txt", sep=";")
 
 gc()
 

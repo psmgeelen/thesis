@@ -95,7 +95,7 @@ colnames(rolling_window_sum) <- c("Itteration","Model","AUC", "ALIFT", "ACC", "L
 head(rolling_window_sum)
 
 # Write file 
-write.table(rolling_window_sum, "rolling_window.txt", sep=";")
+write.table(rolling_window_sum, "rolling_window_no_clustering.txt", sep=";")
 
 gc()
 
