@@ -75,7 +75,8 @@ for (i in models)
     
     for (o in 1:hyper_nr) {
       
-      data$cluster[[clusters$id[ ,0]]] <- unlist(o)
+      
+      data$cluster[[clusters$id[ ,o]]] <- unlist(o)
     }
     
     # memory clean
