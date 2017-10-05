@@ -63,33 +63,19 @@ for (i in models)
     
     # Setting up clustering training set
     d <- daisy(bank_time_ss_cl_without_y, metric = "gower")
-    cc_hyper <- CrossClustering(d, k.w.min = 2, k.w.max=19, k.c.max = 19)
-    hyper_nr <- unlist(cc_hyper$Optimal.cluster)
+    
     
     # printing clustering information training set
-    cat("amount of clusters training set:", cc_hyper$Optimal.cluster, "\n")
     
-    clusters <- kNN(d, hyper_nr)
+    clusters <- dbscan(d, 0.1)
     
     data <- bank_time_ss_cl
     
-    for (o in 1:hyper_nr) {
-      
-      nr_of_clustering <- o
-      
-      data$cluster[[clusters$id[ ,o]]] <- nr_of_clustering 
-    }
+    data$cluster <- unlist(clusters$cluster)
     
     # memory clean
     gc()
     
-    
-    # clean out variables
-    ss_clust <- vector(mode="numeric", length=0)
-    ss_it_length <- vector(mode="numeric", length=0)
-    clust_n <- vector(mode="numeric", length=0)
-    ss_clust <- vector(mode="numeric", length=0)
-    clust_tot <- vector(mode="numeric", length=0)
     
     #Holdout, chronology in this case is important in order to not overestimate prediction accuracy. 
     data_ts <- data[1:(1/3*nrow(data)),]
@@ -119,9 +105,9 @@ for (i in models)
     C5_t <- c(C5_t, w1)
     C6_t <- c(C6_t, w2)
     C14_t <- c(C14_t, ws)
-    C15_t <- c(C15_t, "KNN")
+    C15_t <- c(C15_t, "DBSCAN")
     # Stack values clustering
-    C9_t <- c(C9_t, unlist(cc_hyper$Optimal.cluster))
+    C9_t <- c(C9_t, length(unique(clusters$cluster)))
     C10_t <- c (C10_t, "")
     C11_t <- c(C11_t, "")
     
@@ -155,7 +141,7 @@ head(rolling_window_sum)
 
 # Write file 
 #write.table(rolling_window_sum, "/home/schnitzel/rolling_window_clust.txt", sep=";")
-write.table(rolling_window_sum, "rolling_window_knn.txt", sep=";")
+write.table(rolling_window_sum, "rolling_window_DBSCAN.txt", sep=";")
 
 gc()
 
