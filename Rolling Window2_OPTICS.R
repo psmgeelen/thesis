@@ -68,7 +68,7 @@ for (i in models)
     # printing clustering information training set
     
     epsilon <- epsilonCompute(d, p = 0.01)
-    
+   
     clusters <- optics(d, epsilon)
     
     data <- bank_time_ss_cl
@@ -107,11 +107,11 @@ for (i in models)
     C5_t <- c(C5_t, w1)
     C6_t <- c(C6_t, w2)
     C14_t <- c(C14_t, ws)
-    C15_t <- c(C15_t, "DBSCAN")
+    C15_t <- c(C15_t, "OPTICS")
     # Stack values clustering
     C9_t <- c(C9_t, length(unique(clusters$cluster)))
     C10_t <- c (C10_t, "")
-    C11_t <- c(C11_t, epsilon)
+    C11_t <- c(C11_t, "")
     
     
     # clean variables
@@ -143,7 +143,7 @@ head(rolling_window_sum)
 
 # Write file 
 #write.table(rolling_window_sum, "/home/schnitzel/rolling_window_clust.txt", sep=";")
-write.table(rolling_window_sum, "rolling_window_DBSCAN2.txt", sep=";")
+write.table(rolling_window_sum, "rolling_window_OPTICS.txt", sep=";")
 
 gc()
 
