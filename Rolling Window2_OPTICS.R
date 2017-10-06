@@ -5,6 +5,7 @@ library(CrossClustering)
 library(dplyr)
 library(cluster)
 library(dbscan)
+library(diffusionMap)
 set.seed(1)
 
 
