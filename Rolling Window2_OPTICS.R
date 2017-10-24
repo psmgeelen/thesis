@@ -70,7 +70,9 @@ for (i in models)
     
     epsilon <- epsilonCompute(d, p = 0.01)
    
-    clusters <- optics(d, epsilon)
+    preclusters <- optics(d, epsilon)
+    
+    clusters <- extractDBSCAN(preclusters, epsilon)
     
     data <- bank_time_ss_cl
     

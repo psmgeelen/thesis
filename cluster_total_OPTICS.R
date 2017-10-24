@@ -23,7 +23,9 @@ d <- daisy(bank_time_without_y, metric = "gower")
 
 epsilon <- epsilonCompute(d, p = 0.01)
 
-clusters <- optics(d, epsilon)
+preclusters <- optics(d, epsilon)
+
+clusters <- extractDBSCAN(preclusters, epsilon)
 
 data <- bank_time
 
