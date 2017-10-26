@@ -114,7 +114,7 @@ for (i in models)
     # Stack values clustering
     C9_t <- c(C9_t, length(unique(clusters$cluster)))
     C10_t <- c (C10_t, "")
-    C11_t <- c(C11_t, "")
+    C11_t <- c(C11_t, epsilon)
     
     
     # clean variables
