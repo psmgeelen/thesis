@@ -27,7 +27,7 @@ C4_t <- vector(mode="numeric", length=0)
 t <- system.time(
 for (i in models) 
   {
-    for (n in 2:(nrow(bank_time)%/%30))  #ngroups = cross validation, minimum is 2 groups/groups shouldnt be less the n=30. 
+    for (n in 2:(nrow(bank_time)%/%30))  #ngroups = cross validation, minimum is 2 groups/groups shouldnt be more then n=30. 
       {  
       # reset model
       M <- 0
