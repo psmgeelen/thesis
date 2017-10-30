@@ -69,31 +69,16 @@ for (i in models)
     # printing clustering information training set
     cat("amount of clusters training set:", cc_hyper$Optimal.cluster, "\n")
     
-    clusters <- kNN(d, hyper_nr)
-    
     data <- bank_time_ss_cl
-    
-    for (o in 1:hyper_nr) {
-      
-      nr_of_clustering <- o
-      
-      data$cluster[[clusters$id[ ,o]]] <- nr_of_clustering 
-    }
-    
-    # memory clean
-    gc()
-    
-    
-    # clean out variables
-    ss_clust <- vector(mode="numeric", length=0)
-    ss_it_length <- vector(mode="numeric", length=0)
-    clust_n <- vector(mode="numeric", length=0)
-    ss_clust <- vector(mode="numeric", length=0)
-    clust_tot <- vector(mode="numeric", length=0)
     
     #Holdout, chronology in this case is important in order to not overestimate prediction accuracy. 
     data_ts <- data[1:(1/3*nrow(data)),]
     data_tr <- data[((1/3*nrow(data))+1):(nrow(data)),]
+    
+    # For KNN method a predictive model is used to train and predict the clusters. 
+    # This is then added to the data and used for modeling later on
+    
+    clusters <- train(data_tr, data_tr, data_tr[, 21])
     
     #Modeling and Predictions 
     M <- fit(y~.,data_tr,model=i, task = "prob")
