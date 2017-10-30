@@ -1,6 +1,5 @@
 #Load File, Load Packages
 bank<-read.csv("bank-additional-full.csv",header=TRUE,sep=";")
-install.packages(rminer)
 library(rminer)
 library(ggplot2)
 set.seed(1)
@@ -9,9 +8,6 @@ set.seed(1)
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
 time_axis <- as.numeric(rownames(bank))
 bank_time <- cbind(bank, time_axis)
-
-#develop subset (quickruns)
-#bank_time <- bank_time_1[1:1000,]
 
 #Set modeling techniques, for more information see description in rminer documentation
 models <- c("ksvm", "ctree", "mlp", "lr")
@@ -22,12 +18,14 @@ C1_t <- vector(mode="numeric", length=0)
 C2_t <- vector(mode="numeric", length=0)
 C3_t <- vector(mode="numeric", length=0)
 C4_t <- vector(mode="numeric", length=0)
+C5_t <- vector(mode="character", length=0)
 
 #----------------Modeling with Rolling Window--------------------#
 t <- system.time(
+  
 for (i in models) 
   {
-    for (n in 2:(nrow(bank_time)%/%30))  #ngroups = cross validation, minimum is 2 groups/groups shouldnt be more then n=30. 
+    for (n in 2:20)  #ngroups = cross validation, minimum is 2 groups/groups shouldnt be more then n=30. 
       {  
       # reset model
       M <- 0
@@ -55,6 +53,7 @@ for (i in models)
       C2_t <- c(C2_t, C2)
       C3_t <- c(C3_t, C3)
       C4_t <- c(C4_t, print(paste(i)))
+      C5_t <- c(C5_t, "no_clustering")
       
       # Memory wipe for scalability
       gc()
@@ -66,15 +65,15 @@ cat("---time---")
 print(t)
 
 #Combine Data Frame
-crossval_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t)
+crossval_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t.C5_t)
 #Label Data Frame
-colnames(crossval_sum) <- c("Groups","Model","AUC of ROC", "ALIFT", "ACC")
+colnames(crossval_sum) <- c("Groups","Model","AUC of ROC", "ALIFT", "ACC", "clustering")
 
 #Show Table (back check)
 head(crossval_sum)
 
 # Write file 
-write.table(crossval_sum, "c:/users/qnect/desktop/crossvalidation.txt", sep=";")
+write.table(crossval_sum, "crossvalidation_none.txt", sep=";")
 
 #Memory wipe
 gc()
