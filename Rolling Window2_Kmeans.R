@@ -72,8 +72,8 @@ for (i in models)
     
     data <- bank_time_ss_cl
     
-    for (o in 1:ws) {
-      data$cluster[[o]] <- unlist(clusters$cluster[[o]])
+    for (o in 1:nrow(data)) {
+      data$cluster[o] <- unlist(clusters$cluster[[o]])
     }
     
     # memory clean

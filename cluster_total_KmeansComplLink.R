@@ -4,9 +4,7 @@ library(rminer)
 library(CrossClustering)
 library(dplyr)
 library(cluster)
-library(diffusionMap)
 set.seed(1)
-
 
 #Create artificial time-axis beforehand though. The website noted that the values were chronologi-
 #cally sorted. Therefore a simple itemnumber identifies a chronology. 
@@ -31,8 +29,8 @@ clusters <- kmeans(d, hyper_nr, iter.max = 10, nstart = 1)
 
 data <- bank_time
 
-for (o in 1:seq(nrow(data))) {
-  data$cluster[[o]] <- unlist(clusters$cluster[[o]])
+for (i in 1:nrow(data)) {
+  data$cluster[i] <- unlist(clusters$cluster[[i]])
 }
 
 # memory clean
