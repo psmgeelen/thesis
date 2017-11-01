@@ -1,5 +1,5 @@
 #Load File, Load Packages
-bank_time<-read.csv("~/thesis/data/total_with_clust.txt",header=TRUE,sep=";")
+bank_time<-read.csv("~/thesis/data/total_with_clust_KmeansCompLink.txt",header=TRUE,sep=";")
 library(rminer)
 library(ggplot2)
 set.seed(1)
@@ -60,7 +60,7 @@ cat("---time---")
 print(t)
 
 #Combine Data Frame
-crossval_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t.C5_t)
+crossval_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t)
 #Label Data Frame
 colnames(crossval_sum) <- c("Groups","Model","AUC of ROC", "ALIFT", "ACC", "clustering")
 
