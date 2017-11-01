@@ -1,13 +1,11 @@
 #Load File, Load Packages
-bank_time<-read.csv("~/thesis/data/total_with_clust_DBSCAN.txt",header=TRUE,sep=";")
+bank_time<-read.csv("~/thesis/data/total_with_clust_KmeansCompLink1.txt",header=TRUE,sep=";")
 library(rminer)
-library(ggplot2)
 set.seed(1)
 
 #Set modeling techniques, for more information see description in rminer documentation
 models <- c("ksvm", "ctree", "mlp", "lr")
 
-#bank_time <- bank[1:1000,]
 
 #Variable prep
 C0_t <- vector(mode="character", length=0)
@@ -22,7 +20,7 @@ t <- system.time(
   
 for (i in models) 
   {
-    for (n in 2:20)  #ngroups = cross validation, minimum is 2 groups/groups shouldnt be more then n=30. 
+    for (n in 2:10)  #ngroups = cross validation, minimum is 2 groups/groups shouldnt be more then n=30. 
       {  
       # reset model
       M <- 0
@@ -62,7 +60,7 @@ cat("---time---")
 print(t)
 
 #Combine Data Frame
-crossval_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t.C5_t)
+crossval_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t)
 #Label Data Frame
 colnames(crossval_sum) <- c("Groups","Model","AUC of ROC", "ALIFT", "ACC", "clustering")
 
