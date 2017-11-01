@@ -60,7 +60,7 @@ cat("---time---")
 print(t)
 
 #Combine Data Frame
-crossval_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t.C5_t)
+crossval_sum <- cbind(C0_t,C4_t,C1_t,C2_t,C3_t,C5_t)
 #Label Data Frame
 colnames(crossval_sum) <- c("Groups","Model","AUC of ROC", "ALIFT", "ACC", "clustering")
 
