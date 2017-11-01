@@ -39,7 +39,7 @@ gc()
 
     
 # Write file 
-write.table(data, "~/thesis/data/total_with_clust_KmeansCompLink.txt", sep=";")
+write.table(data, "~/thesis/data/total_with_clust_KmeansCompLink1.txt", sep=";")
 
 gc()
 
